@@ -2,20 +2,15 @@ module ActiveMerchant #:nodoc:
   module Shipping
     
     class ConfirmResponse < Response
-      #attr_reader :tracking_number  string
-      #attr_reader :shipment_events  array of ShipmentEvents in chronological order
-      #attr_reader :origin, :destination
+      
+      attr_reader :digest
       
       def initialize(success, message, params = {}, options = {})
-        #@tracking_number = options[:tracking_number]
-        #@shipment_events = Array(options[:shipment_events])
-        #@origin, @destination = options[:origin], options[:destination]
-        #super
+        @digest = options[:digest] || options[:shipment_digest]
+        super
       end
       
-      #def latest_event
-        #@shipment_events.last
-      #end
+      alias_method :shipment_digest, :digest
     end
     
   end

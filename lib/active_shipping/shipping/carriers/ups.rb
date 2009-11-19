@@ -342,7 +342,7 @@ module ActiveMerchant
           location_node << XmlNode.new('CompanyName', location.commercial? ? location.company_name : location.full_name)
           location_node << XmlNode.new('AttentionName', location.full_name)
           
-          if name == 'Shipper' and (origin_account = @options[:origin_account] || options[:origin_account])
+          if name == 'Shipper' and (origin_account = @options[:origin_account] || @options[:account_number] || options[:origin_account] || options[:account_number])
             location_node << XmlNode.new('ShipperNumber', origin_account)
           elsif name == 'ShipTo' and (destination_account = @options[:destination_account] || options[:destination_account])
             location_node << XmlNode.new('ShipperAssignedIdentificationNumber', destination_account)
@@ -450,8 +450,10 @@ module ActiveMerchant
         xml = REXML::Document.new(response)
         success = response_success?(xml)
         message = response_message(xml)
-        
         if success
+          #transportation_fee = xml.elements.each('/ShipmentConfirmResponse/ShipmentCharges/TransportationCharges')
+          
+
           #rate_estimates = []
           
           #xml.elements.each('/*/RatedShipment') do |rated_shipment|

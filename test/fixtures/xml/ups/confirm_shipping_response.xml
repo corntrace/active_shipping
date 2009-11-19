@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-16"?>
+<ShipmentConfirmResponse>
+    <Response>
+        <ResponseStatusCode>1</ResponseStatusCode>
+        <ResponseStatusDescription>Success</ResponseStatusDescription>
+        <Error>
+            <ErrorSeverity>Warning</ErrorSeverity>
+            <ErrorCode>120900</ErrorCode>
+            <ErrorDescription>User Id and Shipper Number combination is not qualified to receive negotiated rates</ErrorDescription>
+        </Error>
+    </Response>
+    <ShipmentCharges>
+        <TransportationCharges>
+            <CurrencyCode>USD</CurrencyCode>
+            <MonetaryValue>61.11</MonetaryValue>
+        </TransportationCharges>
+        <ServiceOptionsCharges>
+            <CurrencyCode>USD</CurrencyCode>
+            <MonetaryValue>0.00</MonetaryValue>
+        </ServiceOptionsCharges>
+        <TotalCharges>
+            <CurrencyCode>USD</CurrencyCode>
+            <MonetaryValue>61.11</MonetaryValue>
+        </TotalCharges>
+    </ShipmentCharges>
+    <BillingWeight>
+        <UnitOfMeasurement>
+            <Code>LBS</Code>
+        </UnitOfMeasurement>
+        <Weight>5.0</Weight>
+    </BillingWeight>
+    <ShipmentIdentificationNumber>1ZR0910E0191416512</ShipmentIdentificationNumber>
+    <ShipmentDigest>Mock_Digest_String</ShipmentDigest>
+</ShipmentConfirmResponse> 
