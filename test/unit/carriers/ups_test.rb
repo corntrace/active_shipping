@@ -12,6 +12,27 @@ class UPSTest < Test::Unit::TestCase
                  )
     @tracking_response = xml_fixture('ups/shipment_from_tiger_direct')
   end
+
+  def test_build_confirm_request
+    @carrier   = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
+    assert_raises(ArgumentError) {@carrier.send(:build_confirm_request, @locations[:beverly_hills], @locations[:real_home_as_residential], @packages.values_at(:chocolate_stuff))}
+    assert_raises(ArgumentError) {@carrier.send(:build_confirm_request, @locations[:beverly_hills], @locations[:real_home_as_residential], @packages.values_at(:chocolate_stuff), :account_number => '123456')}
+    assert_nothing_raised do
+      puts @carrier.send(:build_confirm_request, @locations[:beverly_hills], @locations[:real_home_as_residential], @packages.values_at(:chocolate_stuff), :account_number => '123456', :service_code => '01')
+    end
+  end
+
+  def test_confirm_shipping
+    @carrier = UPS.new( :key => 'xxxx', :login => 'xxxx', :password => 'xxxx', :test => true)
+    assert_nothing_raised do
+      response = @carrier.confirm_shipping(
+        @locations[:beverly_hills],
+        @locations[:real_home_as_residential],
+        @packages.values_at(:chocolate_stuff),
+        :account_number => 'xxxx', :origin_account => 'xxxx', :service_code => '01'
+      )
+    end
+  end
   
   def test_initialize_options_requirements
     assert_raises(ArgumentError) { UPS.new }

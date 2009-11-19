@@ -85,6 +85,8 @@ module ActiveMerchant
                                       :phone => '1-613-580-2400',
                                       :fax => '1-613-580-2495'),
         :beverly_hills => Location.new(
+                                      :first_name => "Kevin",
+                                      :last_name => "Fu",
                                       :country => 'US',
                                       :state => 'CA',
                                       :city => 'Beverly Hills',
@@ -107,6 +109,7 @@ module ActiveMerchant
                                       :zip => '33615',
                                       :address_type => 'commercial'),
         :real_google_as_commercial => Location.new(
+                                      :company_name => "Google",
                                       :country => 'US',
                                       :city => 'Mountain View',
                                       :state => 'CA',
@@ -141,6 +144,8 @@ module ActiveMerchant
                                       :zip => '33615',
                                       :address_type => 'residential'),
         :real_home_as_residential => Location.new(
+                                      :first_name => "Kevin",
+                                      :last_name => "Fu",
                                       :country => 'US',
                                       :city => 'Tampa',
                                       :state => 'FL',

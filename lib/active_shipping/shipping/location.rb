@@ -12,7 +12,10 @@ module ActiveMerchant #:nodoc:
                   :address3,
                   :phone,
                   :fax,
-                  :address_type
+                  :address_type,
+                  :first_name,
+                  :last_name,
+                  :company_name
       
       alias_method :zip, :postal_code
       alias_method :postal, :postal_code
@@ -34,6 +37,9 @@ module ActiveMerchant #:nodoc:
         @fax = options[:fax]
         raise ArgumentError.new('address_type must be either "residential" or "commercial"') if options[:address_type] and not (["residential", "commercial", ""]).include?(options[:address_type].to_s)
         @address_type = options[:address_type].nil? ? nil : options[:address_type].to_s
+        @first_name = options[:first_name]
+        @last_name = options[:last_name]
+        @company_name = options[:company_name]
       end
       
       def self.from(object, options={})
@@ -78,6 +84,10 @@ module ActiveMerchant #:nodoc:
       
       def to_s
         prettyprint.gsub(/\n/, ' ')
+      end
+
+      def full_name
+        "#{first_name}#{' ' unless first_name.blank? or last_name.blank?}#{last_name}"
       end
       
       def prettyprint
