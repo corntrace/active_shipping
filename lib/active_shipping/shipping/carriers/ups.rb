@@ -450,8 +450,16 @@ module ActiveMerchant
         xml = REXML::Document.new(response)
         success = response_success?(xml)
         message = response_message(xml)
+
         if success
-          #transportation_fee = xml.elements.each('/ShipmentConfirmResponse/ShipmentCharges/TransportationCharges')
+          #first_shipment = xml.elements['/*/Shipment']
+          #first_package = first_shipment.elements['Package']
+          #tracking_number = first_shipment.get_text('ShipmentIdentificationNumber | Package/TrackingNumber').to_s
+          transportation_fee = xml.elements['//ShipmentCharges/TransportationCharges'].get_text('MonetaryValue').to_s
+          transportation_fee_currency = xml.elements['//ShipmentCharges/TransportationCharges'].get_text('CurrencyCode').to_s
+          puts "*******************"
+          puts "#{transportation_fee_currency} #{transportation_fee}"
+          puts "*******************"
           
 
           #rate_estimates = []
@@ -466,7 +474,7 @@ module ActiveMerchant
                                 #:packages => packages)
           #end
         end
-        ConfirmResponse.new(success, message, Hash.from_xml(response).values.first, :shipment_digest => 'haha', :xml => response, :request => last_request)
+        #ConfirmResponse.new(success, message, Hash.from_xml(response).values.first, :shipment_digest => 'haha', :xml => response, :request => last_request)
       end# }}}
       
       def location_from_address_node(address)

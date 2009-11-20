@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-16"?>
+<?xml version="1.0"?>
 <ShipmentConfirmResponse>
     <Response>
         <ResponseStatusCode>1</ResponseStatusCode>
@@ -31,4 +31,4 @@
     </BillingWeight>
     <ShipmentIdentificationNumber>1ZR0910E0191416512</ShipmentIdentificationNumber>
     <ShipmentDigest>Mock_Digest_String</ShipmentDigest>
-</ShipmentConfirmResponse> 
+</ShipmentConfirmResponse>

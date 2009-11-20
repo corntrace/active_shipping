@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + '/../../test_helper'
+require 'ruby-debug'
 
 class UPSTest < Test::Unit::TestCase
   
@@ -14,7 +15,7 @@ class UPSTest < Test::Unit::TestCase
   end
 
   def test_build_confirm_request
-    @carrier   = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
+    @carrier = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
     assert_raises(ArgumentError) {@carrier.send(:build_confirm_request, @locations[:beverly_hills], @locations[:real_home_as_residential], @packages.values_at(:chocolate_stuff))}
     assert_raises(ArgumentError) {@carrier.send(:build_confirm_request, @locations[:beverly_hills], @locations[:real_home_as_residential], @packages.values_at(:chocolate_stuff), :account_number => '123456')}
     assert_nothing_raised do
@@ -22,17 +23,23 @@ class UPSTest < Test::Unit::TestCase
     end
   end
 
-  def test_confirm_shipping
-    @carrier = UPS.new( :key => 'xxx', :login => 'xxx', :password => 'xxxx', :test => true)
-    assert_nothing_raised do
-      response = @carrier.confirm_shipping(
-        @locations[:beverly_hills],
-        @locations[:real_home_as_residential],
-        @packages.values_at(:chocolate_stuff),
-        :account_number => 'xxx', :service_code => '01'
-      )
-    end
+  def test_parse_confirm_response
+    response = xml_fixture('ups/confirm_shipping_response')
+    @carrier = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
+    @carrier.send :parse_confirm_response, response
   end
+
+  #def test_confirm_shipping
+    #@carrier = UPS.new( :key => 'xxx', :login => 'xxx', :password => 'xxxx', :test => true)
+    #assert_nothing_raised do
+      #response = @carrier.confirm_shipping(
+        #@locations[:beverly_hills],
+        #@locations[:real_home_as_residential],
+        #@packages.values_at(:chocolate_stuff),
+        #:account_number => 'xxx', :service_code => '01'
+      #)
+    #end
+  #end
   
   def test_initialize_options_requirements
     assert_raises(ArgumentError) { UPS.new }
