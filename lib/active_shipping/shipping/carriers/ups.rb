@@ -452,32 +452,37 @@ module ActiveMerchant
         message = response_message(xml)
 
         if success
-          #first_shipment = xml.elements['/*/Shipment']
-          #first_package = first_shipment.elements['Package']
-          #tracking_number = first_shipment.get_text('ShipmentIdentificationNumber | Package/TrackingNumber').to_s
+          # not implemented: some warning messages
           transportation_fee = xml.elements['//ShipmentCharges/TransportationCharges'].get_text('MonetaryValue').to_s
           transportation_fee_currency = xml.elements['//ShipmentCharges/TransportationCharges'].get_text('CurrencyCode').to_s
-          puts "*******************"
-          puts "#{transportation_fee_currency} #{transportation_fee}"
-          puts "*******************"
-          
-
-          #rate_estimates = []
-          
-          #xml.elements.each('/*/RatedShipment') do |rated_shipment|
-            #service_code = rated_shipment.get_text('Service/Code').to_s
-            #rate_estimates << RateEstimate.new(origin, destination, @@name,
-                                #service_name_for(origin, service_code),
-                                #:total_price => rated_shipment.get_text('TotalCharges/MonetaryValue').to_s.to_f,
-                                #:currency => rated_shipment.get_text('TotalCharges/CurrencyCode').to_s,
-                                #:service_code => service_code,
-                                #:packages => packages)
-          #end
+          service_options_charges = xml.elements['//ShipmentCharges/ServiceOptionsCharges'].get_text('MonetaryValue').to_s
+          service_options_charges_currency = xml.elements['//ShipmentCharges/ServiceOptionsCharges'].get_text('CurrencyCode').to_s
+          total_charges = xml.elements['//ShipmentCharges/TotalCharges'].get_text('MonetaryValue').to_s
+          total_charges_currency = xml.elements['//ShipmentCharges/TotalCharges'].get_text('CurrencyCode').to_s
+          weight = Mass.new(
+            xml.elements['//BillingWeight/Weight'].get_text('').to_s.to_f,
+            xml.elements['//BillingWeight/UnitOfMeasurement'].get_text('Code').to_s
+          ) 
+          shipment_identification_number = xml.elements['//ShipmentIdentificationNumber'].get_text('').to_s
+          shipment_digest = xml.elements['//ShipmentDigest'].get_text('').to_s
         end
-        #ConfirmResponse.new(success, message, Hash.from_xml(response).values.first, :shipment_digest => 'haha', :xml => response, :request => last_request)
+        ConfirmResponse.new(
+          success, message, Hash.from_xml(response).values.first, 
+          :transportation_fee => transportation_fee,
+          :transportation_fee_currency => transportation_fee_currency,
+          :service_options_charges => service_options_charges,
+          :service_options_charges_currency => service_options_charges_currency,
+          :total_charges => total_charges,
+          :total_charges_currency => total_charges_currency,
+          :weight => weight,
+          :shipment_identification_number => shipment_identification_number,
+          :shipment_digest => shipment_digest, 
+          :xml => response, 
+          :request => last_request
+        )
       end# }}}
       
-      def location_from_address_node(address)
+      def location_from_address_node(address)# {{{
         return nil unless address
         Location.new(
                 :country =>     node_text_or_nil(address.elements['CountryCode']),
@@ -488,7 +493,7 @@ module ActiveMerchant
                 :address2 =>    node_text_or_nil(address.elements['AddressLine2']),
                 :address3 =>    node_text_or_nil(address.elements['AddressLine3'])
               )
-      end
+      end# }}}
       
       def response_success?(xml)
         xml.get_text('/*/Response/ResponseStatusCode').to_s == '1'

@@ -26,20 +26,25 @@ class UPSTest < Test::Unit::TestCase
   def test_parse_confirm_response
     response = xml_fixture('ups/confirm_shipping_response')
     @carrier = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
-    @carrier.send :parse_confirm_response, response
+    assert_nothing_raised do 
+      @carrier.send :parse_confirm_response, response
+    end
   end
 
-  #def test_confirm_shipping
-    #@carrier = UPS.new( :key => 'xxx', :login => 'xxx', :password => 'xxxx', :test => true)
-    #assert_nothing_raised do
-      #response = @carrier.confirm_shipping(
-        #@locations[:beverly_hills],
-        #@locations[:real_home_as_residential],
-        #@packages.values_at(:chocolate_stuff),
-        #:account_number => 'xxx', :service_code => '01'
-      #)
-    #end
-  #end
+  def test_confirm_shipping
+    response = xml_fixture('ups/confirm_shipping_response')
+    @carrier = UPS.new( :key => 'xxx', :login => 'xxx', :password => 'xxxx', :test => true)
+    @carrier.stubs(:commit).returns(response)
+    assert_nothing_raised do
+      response = @carrier.confirm_shipping(
+        @locations[:beverly_hills],
+        @locations[:real_home_as_residential],
+        @packages.values_at(:chocolate_stuff),
+        :account_number => 'xxx', :service_code => '01'
+      )
+    end
+    assert_equal false, response.blank?
+  end
   
   def test_initialize_options_requirements
     assert_raises(ArgumentError) { UPS.new }
