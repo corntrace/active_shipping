@@ -10,7 +10,7 @@ module ActiveMerchant
       @@name = "UPS"
       
       TEST_URL = 'https://wwwcie.ups.com'
-      LIVE_URL = 'https://www.ups.comxxxxxxx'
+      LIVE_URL = 'https://www.ups.com'
       
       RESOURCES = {
         :rates => 'ups.app/xml/Rate',
@@ -99,7 +99,7 @@ module ActiveMerchant
 
 
       # ===== Code by Kevin(corntrace@gmail.com) =====
-      #
+      
       def confirm_shipping(origin, destination, packages, options={})
         origin, destination = upsified_location(origin), upsified_location(destination)
         options = @options.merge(options)
@@ -109,10 +109,18 @@ module ActiveMerchant
         response = commit(:confirm, save_request(access_request+confirm_request), (options[:test] || false))
         parse_confirm_response(response, options)
       end
+
+			def accept_shipping(shipment_digest, options={})
+				options = @options.merge(options)
+        access_request = build_access_request
+        accept_request = build_accept_request(shipment_digest, options)
+        response = commit(:accept, save_request(access_request+accept_request), (options[:test] || false))
+        parse_accept_response(response, options)
+			end
       
       protected
       
-      def upsified_location(location)
+      def upsified_location(location)# {{{
         if location.country_code == 'US' && US_TERRITORIES_TREATED_AS_COUNTRIES.include?(location.state)
           atts = {:country => location.state}
           [:zip, :city, :address1, :address2, :address3, :phone, :fax, :address_type].each do |att|
@@ -122,7 +130,7 @@ module ActiveMerchant
         else
           location
         end
-      end
+      end# }}}
       
       def build_access_request# {{{
         xml_request = XmlNode.new('AccessRequest') do |access_request|
@@ -317,6 +325,21 @@ module ActiveMerchant
         end
         xml_request.to_s
       end# }}}
+
+      def build_accept_request(shipment_digest, options)# {{{
+        raise ArgumentError.new("The shipment digest is needed") if shipment_digest.blank?
+        xml_request = XmlNode.new("ShipmentAcceptRequest") do |root_node|
+          root_node << XmlNode.new("Request") do |request|
+            request << XmlNode.new("TransactionReference") do |trans_refer|
+              trans_refer << XmlNode.new("CustomerContext", options[:comment] || '')
+            end
+            request << XmlNode.new('RequestAction', 'ShipAccept')
+            request << XmlNode.new('RequestOption', 1)
+          end
+          root_node << XmlNode.new('ShipmentDigest', shipment_digest)
+        end
+        xml_request.to_s
+      end# }}}
       
       def build_tracking_request(tracking_number, options={})# {{{
         xml_request = XmlNode.new('TrackRequest') do |root_node|
@@ -481,6 +504,21 @@ module ActiveMerchant
           :request => last_request
         )
       end# }}}
+
+      def parse_accept_response(response, options={})# {{{
+        xml = REXML::Document.new(response)
+        success = response_success?(xml)
+        message = response_message(xml)
+        if success
+          graphic_image = xml.elements['//GraphicImage'].get_text().to_s
+          tracking_number = xml.elements['//ShipmentIdentificationNumber'].get_text().to_s
+        end
+        AcceptResponse.new(
+          success, message, Hash.from_xml(response).values.first,
+          :graphic_image => graphic_image,
+          :tracking_number => tracking_number
+        )
+      end# }}}
       
       def location_from_address_node(address)# {{{
         return nil unless address
@@ -507,8 +545,7 @@ module ActiveMerchant
         ssl_post("#{test ? TEST_URL : LIVE_URL}/#{RESOURCES[action]}", request)
       end
       
-      
-      def service_name_for(origin, code)
+      def service_name_for(origin, code)# {{{
         origin = origin.country_code(:alpha2)
         
         name = case origin
@@ -519,7 +556,7 @@ module ActiveMerchant
         
         name ||= OTHER_NON_US_ORIGIN_SERVICES[code] unless name == 'US'
         name ||= DEFAULT_SERVICES[code]
-      end
+      end# }}}
       
     end
   end

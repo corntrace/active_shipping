@@ -23,18 +23,36 @@ class UPSTest < Test::Unit::TestCase
     end
   end
 
+  def test_build_accept_request
+    @carrier = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
+    assert_raises(ArgumentError) {@carrier.send(:build_accept_request, '', :comment => "mock_comment")}
+    assert_nothing_raised do
+      response = @carrier.send(:build_accept_request, "mock_digest", :comment => "mock_comment")
+    end
+  end
+
   def test_parse_confirm_response
     response = xml_fixture('ups/confirm_shipping_response')
     @carrier = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
     assert_nothing_raised do 
-      @carrier.send :parse_confirm_response, response
+      result = @carrier.send :parse_confirm_response, response
+      assert_equal false, result.shipment_digest.blank?
+    end
+  end
+
+  def test_parse_accept_response
+    response = xml_fixture('ups/accept_shipping_response')
+    @carrier = UPS.new( :key => 'key', :login => 'login', :password => 'password', :test => true)
+    assert_nothing_raised do 
+      result = @carrier.send :parse_accept_response, response
+      assert_equal false, result.graphic_image.blank?
+      assert_equal false, result.tracking_number.blank?
     end
   end
 
   def test_confirm_shipping
-    response = xml_fixture('ups/confirm_shipping_response')
-    @carrier = UPS.new( :key => 'xxx', :login => 'xxx', :password => 'xxxx', :test => true)
-    @carrier.stubs(:commit).returns(response)
+    @carrier = UPS.new(:key => 'xxxx', :login => 'xxx', :password => 'xxx', :test => true)
+    @carrier.stubs(:commit).returns(xml_fixture('ups/confirm_shipping_response'))
     assert_nothing_raised do
       response = @carrier.confirm_shipping(
         @locations[:beverly_hills],
@@ -42,8 +60,23 @@ class UPSTest < Test::Unit::TestCase
         @packages.values_at(:chocolate_stuff),
         :account_number => 'xxx', :service_code => '01'
       )
+      assert_equal false, response.blank?
     end
-    assert_equal false, response.blank?
+  end
+
+  def test_accept_shipping
+    @carrier = UPS.new( :key => 'xxx', :login => 'xxx', :password => 'xxx', :test => true)
+    @carrier.stubs(:commit).returns(xml_fixture('ups/confirm_shipping_response'))
+    confirm_resp = @carrier.confirm_shipping(
+      @locations[:beverly_hills],
+      @locations[:real_home_as_residential],
+      @packages.values_at(:chocolate_stuff),
+      :account_number => 'xxx', :service_code => '01'
+    )
+    @carrier.stubs(:commit).returns(xml_fixture('ups/accept_shipping_response'))
+    assert_nothing_raised do
+      accept_resp = @carrier.accept_shipping(confirm_resp.shipment_digest)
+    end
   end
   
   def test_initialize_options_requirements
